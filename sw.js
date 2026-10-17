@@ -1,19 +1,18 @@
 // Keeps the sign-up page (fonts, logos, team photo) working if the booth's wifi drops.
 // Bump the version number whenever you change index.html.
-const CACHE = 'tpa-signup-v4';
+const CACHE = 'tpa-signup-v5';
 
 const SITE_ASSETS = [
   'https://teamperezaguilar.com/uploads/team-photo.jpg',
   'https://teamperezaguilar.com/sfr-logo.png',
   'https://teamperezaguilar.com/alterra-logo.png',
   'https://teamperezaguilar.com/realtor-mls-logo.png',
-  'https://teamperezaguilar.com/uploads/6c42d43b-78ca-4328-be2e-30d5f08f4a1e-61703d34.jpg',
   'https://teamperezaguilar.com/uploads/eb1f234b-b60c-46e5-ae0d-5562820f772a.jpg'
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(async c => {
-    await c.addAll(['./', './index.html']);
+    await c.addAll(['./', './index.html', './tile-band.jpg', './footer-limewash.jpg']);
     // Website images: saved ahead of time so the booth works offline from the first visit.
     await Promise.all(SITE_ASSETS.map(u =>
       fetch(new Request(u, { mode: 'no-cors' })).then(res => c.put(u, res)).catch(() => {})
@@ -50,7 +49,8 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com' || url.hostname === 'teamperezaguilar.com') {
+  const ownImage = url.origin === scope.origin && /\.(jpg|jpeg|png)$/i.test(url.pathname);
+  if (ownImage || url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com' || url.hostname === 'teamperezaguilar.com') {
     e.respondWith(
       caches.match(req).then(hit => hit || fetch(req).then(res => {
         const copy = res.clone();
