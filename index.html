@@ -23,9 +23,9 @@
                always matches the website.
    ===================================================================== */
 const CONFIG = {
-  scriptUrl: 'https://script.google.com/macros/s/AKfycbyYRQTBzsDf3R_e0v9CiR_5-Hyw4ZNDbZ-iiw78MFpm3IAaweorrYhGh7Wf5wE57xrf/exec',
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbzE01YbKpJhde197_75axb2yg1ajjtbzH5lhwki2uoB0ZtuXZ3aeKQAqN4R9lK4bkv67Q/exec',
   defaultEvent: 'newsletter',
-  kioskResetSeconds: 8,
+  resetSeconds: 10,      // after a sign-up, the page starts over this many seconds later
   kioskIdleSeconds: 90,
   website: 'https://teamperezaguilar.com',
   events: {
@@ -116,6 +116,8 @@ const CONFIG = {
   .pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-dark);box-shadow:inset 0 -4px 0 var(--marigold);}
   .pill.wide{grid-column:1 / -1;}
   .reveal{padding:18px 20px;background:var(--sand);border-left:5px solid var(--marigold);}
+  .reveal.care{border-left-color:var(--blue);font-size:.95rem;line-height:1.55;color:var(--ink-3);}
+  .reveal.care b{color:var(--ink);}
   .checks{display:flex;flex-direction:column;gap:16px;padding-top:22px;border-top:1px solid var(--line);}
   .check{display:flex;align-items:flex-start;gap:14px;cursor:pointer;}
   .check input{width:26px;height:26px;margin:1px 0 0;accent-color:var(--terracotta);flex-shrink:0;}
@@ -132,6 +134,7 @@ const CONFIG = {
   .done h2{font-size:clamp(2.2rem,5vw,3.2rem);line-height:1.05;margin:16px 0 14px;}
   .done .lede{max-width:480px;margin:0 auto;}
   .done .btn{display:inline-block;margin-top:26px;padding:16px 26px;border:1.5px solid var(--ink);color:var(--ink);text-decoration:none;font:700 .85rem var(--sans);letter-spacing:.14em;text-transform:uppercase;}
+  .done .countdown{margin:22px 0 0;font:600 .85rem var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-5);}
   .done .again{display:block;margin:16px auto 0;background:none;border:0;color:var(--ink-4);font:600 .95rem var(--sans);text-decoration:underline;cursor:pointer;}
 
   /* footer */
@@ -239,6 +242,13 @@ const CONFIG = {
           <div class="pills three" id="when"></div>
         </div>
 
+        <div class="reveal care" id="fcNote" hidden data-t-html="fcNote"></div>
+
+        <div>
+          <div class="lbl" data-t="consultQ"></div>
+          <div class="pills" id="consult"></div>
+        </div>
+
         <div class="checks">
           <label class="check main"><input type="checkbox" id="newsletter"><span><span data-t="newsletter"></span><small data-t="newsletterSmall"></small></span></label>
           <label class="check" id="consentWrap" hidden><input type="checkbox" id="consent"><span data-t="consent"></span></label>
@@ -258,6 +268,7 @@ const CONFIG = {
     <p class="lede" data-t="doneBody"></p>
     <a class="btn" id="siteBtn" target="_blank" rel="noopener" data-t="site" hidden></a>
     <button type="button" class="again" id="againBtn" data-t="again" hidden></button>
+    <p class="countdown" id="countdown"></p>
   </section>
 </main>
 
@@ -314,6 +325,10 @@ const CONFIG = {
       first: 'First Name', last: 'Last Name', email: 'Email', phone: 'Phone Number', optional: '(optional)',
       bucketQ: 'What best describes you right now?',
       whenQ: 'When are you thinking?',
+      fcNote: '<b>You are not alone, and you may have more options than you think.</b> Our help is free and confidential. Silvia is a short sale negotiator and Fernando can review loan options — we will reach out privately.',
+      consultQ: 'Would you like a free, no-pressure consultation?',
+      consultYes: 'Yes — please contact me', consultNo: 'Not right now — just the newsletter',
+      errConsult: 'Please let us know if you would like a free consultation.',
       newsletter: 'Yes! Send me the Team Perez Aguilar monthly newsletter.',
       newsletterSmall: 'By email. Unsubscribe anytime.',
       consent: 'I also agree to be contacted by Team Perez Aguilar — Silvia Aguilar (DRE #01745879, San Fernando Realty) and Fernando Perez (NMLS #1011109, Simply PMG) — by phone, text, or email about real estate and home financing. Message and data rates may apply. Consent is not a condition of service.',
@@ -327,6 +342,7 @@ const CONFIG = {
       doneTitle: 'Thank you, <em>{name}</em>!',
       doneBody: 'Watch your inbox for our next monthly newsletter. Questions today about buying, selling or a home loan? Silvia and Fernando would love to help.',
       site: 'Visit Our Website', again: 'Sign up someone else',
+      countdown: n => 'Starting over in ' + n + '…',
       footBlurb: 'Bilingual real estate broker and loan officer serving San Fernando Valley, Santa Clarita Valley, Antelope Valley, and LA County.',
       pending: n => n === 1 ? '1 sign-up saved — will sync when online' : n + ' sign-ups saved — will sync when online',
       notConnected: n => 'Not connected to Google Sheet yet · ' + n + ' saved on this device'
@@ -338,6 +354,10 @@ const CONFIG = {
       first: 'Nombre', last: 'Apellido', email: 'Correo Electrónico', phone: 'Teléfono', optional: '(opcional)',
       bucketQ: '¿Qué lo describe mejor en este momento?',
       whenQ: '¿Para cuándo lo está pensando?',
+      fcNote: '<b>No está solo, y puede tener más opciones de las que cree.</b> Nuestra ayuda es gratuita y confidencial. Silvia es negociadora de ventas cortas (short sales) y Fernando puede revisar opciones de préstamo — nos comunicaremos con usted en privado.',
+      consultQ: '¿Le gustaría una consulta gratuita y sin compromiso?',
+      consultYes: 'Sí — por favor contáctenme', consultNo: 'Ahora no — solo el boletín',
+      errConsult: 'Por favor díganos si le gustaría una consulta gratuita.',
       newsletter: '¡Sí! Envíenme el boletín mensual de Team Perez Aguilar.',
       newsletterSmall: 'Por correo electrónico. Puede cancelar en cualquier momento.',
       consent: 'También acepto que Team Perez Aguilar — Silvia Aguilar (DRE #01745879, San Fernando Realty) y Fernando Perez (NMLS #1011109, Simply PMG) — me contacten por teléfono, mensaje de texto o correo electrónico sobre bienes raíces y financiamiento de vivienda. Pueden aplicar tarifas de mensajes y datos. El consentimiento no es una condición del servicio.',
@@ -351,21 +371,23 @@ const CONFIG = {
       doneTitle: '¡Gracias, <em>{name}</em>!',
       doneBody: 'Esté pendiente de su correo para nuestro próximo boletín mensual. ¿Tiene preguntas hoy sobre comprar, vender o un préstamo? Silvia y Fernando con gusto le ayudan.',
       site: 'Visite Nuestro Sitio Web', again: 'Inscribir a otra persona',
+      countdown: n => 'Comenzando de nuevo en ' + n + '…',
       footBlurb: 'Broker de bienes raíces y oficial de préstamos bilingües, sirviendo al Valle de San Fernando, Valle de Santa Clarita, Valle del Antílope y el Condado de Los Ángeles.',
       pending: n => n === 1 ? '1 registro guardado — se enviará al conectarse' : n + ' registros guardados — se enviarán al conectarse',
       notConnected: n => 'Aún sin conexión a Google Sheet · ' + n + ' guardados en este dispositivo'
     }
   };
 
-  /* value = what lands in the sheet (always English); timeframe asked for the first five */
+  /* value = what lands in the sheet (always English); the timeframe question shows for when:true */
   const BUCKETS = [
     { v: 'Buying',                 en: 'Looking to buy',                es: 'Quiero comprar',                   when: true },
     { v: 'Selling',                en: 'Thinking of selling',           es: 'Pienso vender',                    when: true },
     { v: 'Buying & Selling',       en: 'Buying & selling',              es: 'Comprar y vender',                 when: true },
     { v: 'Refinancing',            en: 'Refinancing',                   es: 'Refinanciar',                      when: true },
+    { v: 'Avoid Foreclosure',      en: 'Behind on payments / avoid foreclosure', es: 'Atrasado en pagos / evitar perder mi casa', when: false },
     { v: 'Renting – Future Buyer', en: 'Renting — want to buy someday', es: 'Rento — quiero comprar algún día', when: true },
     { v: 'Investor',               en: 'Investor',                      es: 'Inversionista',                    when: false },
-    { v: 'Just Staying Informed',  en: 'Just staying informed',         es: 'Solo mantenerme informado(a)',     when: false, wide: true }
+    { v: 'Just Staying Informed',  en: 'Just staying informed',         es: 'Solo mantenerme informado(a)',     when: false }
   ];
   const WHEN = [
     { v: '0–6 months',  en: '0–6 months',  es: '0–6 meses' },
@@ -381,7 +403,7 @@ const CONFIG = {
   const KIOSK = (params.get('mode') || '').toLowerCase() === 'kiosk';
 
   /* ---------- state ---------- */
-  const S = { view: 'lang', lang: 'en', bucket: '', when: '', busy: false, name: '' };
+  const S = { view: 'lang', lang: 'en', bucket: '', when: '', consult: '', busy: false, name: '' };
   const $ = id => document.getElementById(id);
   const el = { first: $('first'), last: $('last'), email: $('email'), phone: $('phone'), news: $('newsletter'), consent: $('consent') };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -425,6 +447,11 @@ const CONFIG = {
     const wWrap = $('when'); wWrap.innerHTML = '';
     WHEN.forEach(w => wWrap.appendChild(pill(w, S.when === w.v, () => { S.when = w.v; clearErr(); render(); })));
 
+    $('fcNote').hidden = S.bucket !== 'Avoid Foreclosure';
+    const cWrap = $('consult'); cWrap.innerHTML = '';
+    [{ v: 'Yes', en: TR.en.consultYes, es: TR.es.consultYes }, { v: 'No', en: TR.en.consultNo, es: TR.es.consultNo }]
+      .forEach(c => cWrap.appendChild(pill(c, S.consult === c.v, () => { S.consult = c.v; clearErr(); render(); })));
+
     $('consentWrap').hidden = digits(el.phone.value).length === 0;
     $('submit').disabled = S.busy;
     $('submit').textContent = S.busy ? T.submitting : T.submit;
@@ -450,6 +477,7 @@ const CONFIG = {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return showErr(T.errEmail);
     if (phone && phone.length !== 10) return showErr(T.errPhone);
     if (needsWhen() && !S.when) return showErr(T.errWhen);
+    if (!S.consult) return showErr(T.errConsult);
     if (!el.news.checked) return showErr(T.errNews);
 
     enqueue({
@@ -462,20 +490,30 @@ const CONFIG = {
       language: S.lang,
       bucket: S.bucket,
       timeframe: needsWhen() ? S.when : '',
+      consultation: S.consult,
       newsletter: true,
       contactConsent: !!(phone && el.consent.checked)
     });
     S.name = first; S.view = 'done'; render();
     window.scrollTo(0, 0);
     flush();
-    if (KIOSK) { clearTimeout(S.timer); S.timer = setTimeout(reset, CONFIG.kioskResetSeconds * 1000); }
+    startLoop();
   });
 
+  /* ---------- loop back to the start after each sign-up ---------- */
+  function startLoop() {
+    clearInterval(S.timer);
+    let left = CONFIG.resetSeconds;
+    const show = () => { $('countdown').textContent = t().countdown(left); };
+    show();
+    S.timer = setInterval(() => { left -= 1; if (left <= 0) reset(); else show(); }, 1000);
+  }
+
   function reset() {
-    clearTimeout(S.timer); clearTimeout(S.idle);
+    clearInterval(S.timer); clearTimeout(S.idle);
     ['first', 'last', 'email', 'phone'].forEach(k => el[k].value = '');
     el.news.checked = false; el.consent.checked = false;
-    S.bucket = ''; S.when = ''; S.busy = false; S.name = ''; clearErr();
+    S.bucket = ''; S.when = ''; S.consult = ''; S.busy = false; S.name = ''; clearErr();
     if (KIOSK) S.lang = 'en';
     S.view = KIOSK ? 'lang' : 'form';
     render(); window.scrollTo(0, 0);
