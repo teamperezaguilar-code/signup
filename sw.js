@@ -1,6 +1,6 @@
 // Keeps the sign-up page (fonts, logos, team photo) working if the booth's wifi drops.
 // Bump the version number whenever you change index.html.
-const CACHE = 'tpa-signup-v2';
+const CACHE = 'tpa-signup-v4';
 
 const SITE_ASSETS = [
   'https://teamperezaguilar.com/uploads/team-photo.jpg',
