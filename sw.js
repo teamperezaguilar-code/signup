@@ -1,12 +1,13 @@
 // Keeps the sign-up page (fonts, logos, team photo) working if the booth's wifi drops.
 // Bump the version number whenever you change index.html.
-const CACHE = 'tpa-signup-v5';
+const CACHE = 'tpa-signup-v6';
 
 const SITE_ASSETS = [
   'https://teamperezaguilar.com/uploads/team-photo.jpg',
   'https://teamperezaguilar.com/sfr-logo.png',
   'https://teamperezaguilar.com/alterra-logo.png',
   'https://teamperezaguilar.com/realtor-mls-logo.png',
+  'https://teamperezaguilar.com/uploads/6c42d43b-78ca-4328-be2e-30d5f08f4a1e-61703d34.jpg',
   'https://teamperezaguilar.com/uploads/eb1f234b-b60c-46e5-ae0d-5562820f772a.jpg'
 ];
 
