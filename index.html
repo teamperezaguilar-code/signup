@@ -53,7 +53,7 @@ const CONFIG = {
   a{color:var(--clay);}
   img{max-width:100%;}
 
-  .tileband{height:44px;background:#1d4570 url("https://teamperezaguilar.com/uploads/6c42d43b-78ca-4328-be2e-30d5f08f4a1e-61703d34.jpg") repeat-x;background-size:auto 100%;}
+  .tileband{height:44px;background:#2f6a5a url("tile-band.jpg") repeat-x;background-size:auto 100%;}
   .limewash{background-color:var(--cream-2);background-image:url("https://teamperezaguilar.com/uploads/eb1f234b-b60c-46e5-ae0d-5562820f772a.jpg");background-size:900px;background-blend-mode:multiply;}
 
   /* header */
@@ -78,7 +78,7 @@ const CONFIG = {
   .welcome{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(28px,4vw,56px);align-items:center;}
   .photo{position:relative;background:var(--sand);border:1px solid var(--line);aspect-ratio:4/5;overflow:hidden;}
   .photo img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block;}
-  .photo::after{content:"";position:absolute;inset:auto 0 0 0;height:10px;background:url("https://teamperezaguilar.com/uploads/6c42d43b-78ca-4328-be2e-30d5f08f4a1e-61703d34.jpg") repeat-x;background-size:auto 100%;}
+  .photo::after{content:"";position:absolute;inset:auto 0 0 0;height:10px;background:url("tile-band.jpg") repeat-x;background-size:auto 100%;}
   .welcome h1{font-size:clamp(2.6rem,6vw,4.1rem);line-height:1.02;margin:18px 0 16px;}
   .welcome .lede{margin-bottom:12px;}
   .welcome .lede.es{color:var(--ink-4);font-style:italic;margin-bottom:28px;}
@@ -138,7 +138,7 @@ const CONFIG = {
   .done .again{display:block;margin:16px auto 0;background:none;border:0;color:var(--ink-4);font:600 .95rem var(--sans);text-decoration:underline;cursor:pointer;}
 
   /* footer */
-  footer{background:var(--olive);color:var(--on-dark);}
+  footer{background:linear-gradient(rgba(34,38,28,.42),rgba(34,38,28,.42)),var(--olive) url("footer-limewash.jpg") center/cover;color:var(--on-dark);}
   .foot{max-width:1080px;margin:0 auto;padding:clamp(28px,5vw,48px) clamp(18px,4vw,40px) 26px;}
   .foot-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 32px;align-items:baseline;padding-bottom:22px;border-bottom:1px solid rgba(251,247,238,.22);}
   .foot .wordmark{color:var(--on-dark);font-size:1.4rem;}
