@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F6F1E6">
+<title>Team Perez Aguilar · Newsletter Sign-Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Archivo:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+/* =====================================================================
+   SETTINGS — the only part you need to edit
+   ---------------------------------------------------------------------
+   scriptUrl : your Google Apps Script web-app URL (already filled in)
+   events    : one line per event. The key (left side) goes in the link:
+               .../?event=farmers-market
+               Add "&mode=kiosk" for the iPad at your booth (it resets
+               itself after each sign-up). Leave it off for QR / bio links.
+               offerEn / offerEs are optional — e.g. a raffle line.
+   assets    : images are loaded from teamperezaguilar.com so this page
+               always matches the website.
+   ===================================================================== */
+const CONFIG = {
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbzE01YbKpJhde197_75axb2yg1ajjtbzH5lhwki2uoB0ZtuXZ3aeKQAqN4R9lK4bkv67Q/exec',
+  defaultEvent: 'newsletter',
+  kioskResetSeconds: 8,
+  kioskIdleSeconds: 90,
+  website: 'https://teamperezaguilar.com',
+  events: {
+    'farmers-market':     { en: 'Farmers Market',      es: 'Mercado de Agricultores', offerEn: '', offerEs: '' },
+    'community-event':    { en: 'Community Event',     es: 'Evento Comunitario',      offerEn: '', offerEs: '' },
+    'homebuyer-workshop': { en: 'Homebuyer Workshop',  es: 'Taller para Compradores', offerEn: '', offerEs: '' },
+    'newsletter':         { en: 'Monthly Newsletter',  es: 'Boletín Mensual',         offerEn: '', offerEs: '' }
+  }
+};
+</script>
+<style>
+  :root{
+    --ink:#241F1B; --ink-2:#292521; --ink-3:#4A4038; --ink-4:#6B5F52; --ink-5:#8C7C6B;
+    --cream:#F4EFE5; --cream-2:#F6F1E6; --paper:#FFFDF8; --sand:#EDE4D2; --line:rgba(41,37,33,.18); --line-2:rgba(41,37,33,.28);
+    --terracotta:#A85236; --clay:#8E4229; --marigold:#E9A62F; --blue:#24558A; --olive:#4E5A41; --olive-ink:#C3CDAE; --on-dark:#FBF7EE;
+    --error:#A63A22;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --site:'https://teamperezaguilar.com/';
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;}
+  body{font-family:var(--sans);font-weight:500;color:var(--ink-2);background:var(--cream);}
+  [hidden]{display:none !important;}
+  a{color:var(--clay);}
+  img{max-width:100%;}
+
+  .tileband{height:44px;background:#1d4570 url("https://teamperezaguilar.com/uploads/6c42d43b-78ca-4328-be2e-30d5f08f4a1e-61703d34.jpg") repeat-x;background-size:auto 100%;}
+  .limewash{background-color:var(--cream-2);background-image:url("https://teamperezaguilar.com/uploads/eb1f234b-b60c-46e5-ae0d-5562820f772a.jpg");background-size:900px;background-blend-mode:multiply;}
+
+  /* header */
+  header{border-bottom:1px solid var(--line);}
+  .bar{max-width:1080px;margin:0 auto;padding:16px clamp(18px,4vw,40px);display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .wordmark{font-family:var(--serif);font-weight:600;font-size:clamp(1.35rem,2.4vw,1.75rem);color:var(--ink-2);letter-spacing:.01em;line-height:1;text-decoration:none;}
+  .wordmark em{font-style:normal;color:var(--clay);}
+  .lang-toggle{display:flex;border:1.5px solid rgba(41,37,33,.5);border-radius:3px;overflow:hidden;box-shadow:0 2px 10px rgba(36,31,27,.14);}
+  .lang-toggle button{font:700 .82rem var(--sans);letter-spacing:.12em;padding:10px 16px;border:0;background:transparent;color:var(--ink);cursor:pointer;}
+  .lang-toggle button[aria-pressed="true"]{background:var(--marigold);}
+
+  main{max-width:1080px;margin:0 auto;padding:clamp(28px,5vw,56px) clamp(18px,4vw,40px) clamp(36px,6vw,64px);}
+
+  /* shared type */
+  .tag{display:inline-block;background:var(--marigold);color:var(--ink);font:700 .72rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;padding:9px 12px;}
+  .eyebrow{font:700 .78rem var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--clay);}
+  h1,h2{font-family:var(--serif);font-weight:600;color:var(--ink);margin:0;letter-spacing:-.005em;}
+  h1 em,h2 em{font-style:italic;color:var(--clay);}
+  .lede{font-size:1.08rem;line-height:1.6;color:var(--ink-3);margin:0;}
+
+  /* welcome (kiosk) */
+  .welcome{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(28px,4vw,56px);align-items:center;}
+  .photo{position:relative;background:var(--sand);border:1px solid var(--line);aspect-ratio:4/5;overflow:hidden;}
+  .photo img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block;}
+  .photo::after{content:"";position:absolute;inset:auto 0 0 0;height:10px;background:url("https://teamperezaguilar.com/uploads/6c42d43b-78ca-4328-be2e-30d5f08f4a1e-61703d34.jpg") repeat-x;background-size:auto 100%;}
+  .welcome h1{font-size:clamp(2.6rem,6vw,4.1rem);line-height:1.02;margin:18px 0 16px;}
+  .welcome .lede{margin-bottom:12px;}
+  .welcome .lede.es{color:var(--ink-4);font-style:italic;margin-bottom:28px;}
+  .team-names{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 30px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .team-names b{display:block;font-family:var(--serif);font-weight:600;font-size:1.25rem;color:var(--ink);}
+  .team-names span{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);margin-top:4px;line-height:1.4;}
+  .pick{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .pick button{cursor:pointer;padding:24px 14px;border:0;font-family:var(--serif);font-size:1.7rem;font-weight:600;line-height:1;text-align:center;}
+  .pick button small{display:block;font:700 .7rem var(--sans);letter-spacing:.14em;text-transform:uppercase;margin-top:10px;}
+  .pick .en{background:var(--terracotta);color:#fff;}
+  .pick .es{background:var(--ink);color:var(--on-dark);}
+  .pick .es small{color:var(--marigold);}
+
+  /* form */
+  .form-wrap{max-width:760px;margin:0 auto;}
+  .intro{display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,3vw,28px);align-items:center;margin-bottom:28px;}
+  .intro .thumb{width:clamp(108px,16vw,150px);aspect-ratio:4/5;border:1px solid var(--line);background:var(--sand);overflow:hidden;}
+  .intro .thumb img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block;}
+  .intro h1{font-size:clamp(2rem,4.6vw,3rem);line-height:1.05;margin:14px 0 10px;}
+  .intro .lede{font-size:1rem;}
+  .who{margin:-6px 0 26px;font-size:.92rem;line-height:1.55;color:var(--ink-4);}
+  .who b{color:var(--ink-2);font-weight:700;}
+  .offer{margin:0 0 24px;padding:16px 20px;background:var(--ink);color:var(--on-dark);font-weight:600;line-height:1.5;border-left:6px solid var(--marigold);}
+
+  .panel{background:var(--paper);border:1px solid var(--line);box-shadow:0 18px 50px rgba(36,31,27,.10);padding:clamp(22px,4vw,40px);}
+  form{display:flex;flex-direction:column;gap:22px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .lbl{display:block;font:700 .78rem var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-bottom:9px;}
+  .lbl em{font-style:normal;font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--ink-5);}
+  input[type=text],input[type=email],input[type=tel]{width:100%;padding:17px 16px;border:1.5px solid var(--line-2);border-radius:0;font:500 1.15rem var(--sans);background:var(--cream-2);color:var(--ink);-webkit-appearance:none;appearance:none;}
+  input:focus{outline:none;border-color:var(--terracotta);background:#fff;box-shadow:0 0 0 3px rgba(168,82,54,.15);}
+  .pills{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .pills.three{grid-template-columns:repeat(3,1fr);}
+  .pill{padding:16px 12px;cursor:pointer;font:600 1.02rem/1.25 var(--sans);text-align:center;border:1.5px solid var(--line-2);background:var(--cream-2);color:var(--ink);transition:background .15s,border-color .15s,color .15s;}
+  .pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-dark);box-shadow:inset 0 -4px 0 var(--marigold);}
+  .pill.wide{grid-column:1 / -1;}
+  .reveal{padding:18px 20px;background:var(--sand);border-left:5px solid var(--marigold);}
+  .checks{display:flex;flex-direction:column;gap:16px;padding-top:22px;border-top:1px solid var(--line);}
+  .check{display:flex;align-items:flex-start;gap:14px;cursor:pointer;}
+  .check input{width:26px;height:26px;margin:1px 0 0;accent-color:var(--terracotta);flex-shrink:0;}
+  .check span{font-size:.92rem;line-height:1.55;color:var(--ink-3);}
+  .check.main span{font-size:1.06rem;font-weight:700;color:var(--ink);}
+  .check.main small{display:block;font-size:.88rem;font-weight:500;color:var(--ink-4);margin-top:3px;}
+  .err{color:var(--error);font-weight:700;}
+  .submit{width:100%;padding:21px;border:0;background:var(--terracotta);color:#fff;font:700 1rem var(--sans);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;}
+  .submit:disabled{opacity:.6;cursor:default;}
+
+  /* success */
+  .done{max-width:620px;margin:0 auto;text-align:center;}
+  .done .photo{max-width:260px;margin:0 auto 26px;}
+  .done h2{font-size:clamp(2.2rem,5vw,3.2rem);line-height:1.05;margin:16px 0 14px;}
+  .done .lede{max-width:480px;margin:0 auto;}
+  .done .btn{display:inline-block;margin-top:26px;padding:16px 26px;border:1.5px solid var(--ink);color:var(--ink);text-decoration:none;font:700 .85rem var(--sans);letter-spacing:.14em;text-transform:uppercase;}
+  .done .again{display:block;margin:16px auto 0;background:none;border:0;color:var(--ink-4);font:600 .95rem var(--sans);text-decoration:underline;cursor:pointer;}
+
+  /* footer */
+  footer{background:var(--olive);color:var(--on-dark);}
+  .foot{max-width:1080px;margin:0 auto;padding:clamp(28px,5vw,48px) clamp(18px,4vw,40px) 26px;}
+  .foot-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 32px;align-items:baseline;padding-bottom:22px;border-bottom:1px solid rgba(251,247,238,.22);}
+  .foot .wordmark{color:var(--on-dark);font-size:1.4rem;}
+  .foot .wordmark em{font-style:italic;color:var(--on-dark);}
+  .foot-top p{margin:0;font-size:.9rem;line-height:1.55;color:rgba(251,247,238,.85);max-width:520px;}
+  .logos{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0;}
+  .logo-card{background:#fff;height:84px;display:flex;align-items:center;justify-content:center;padding:10px 14px;}
+  .logo-card img{max-height:62px;max-width:100%;object-fit:contain;display:block;}
+  .disc{display:grid;grid-template-columns:1fr 1fr;gap:22px 32px;}
+  .disc h3{display:flex;align-items:center;gap:9px;margin:0 0 8px;font:700 .74rem var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--on-dark);}
+  .disc h3 svg{flex-shrink:0;}
+  .disc p{margin:0;font-size:.82rem;line-height:1.6;color:rgba(251,247,238,.82);}
+  .lic{margin-top:22px;padding-top:18px;border-top:1px solid rgba(251,247,238,.22);display:grid;grid-template-columns:1fr 1fr;gap:14px 32px;font-size:.8rem;line-height:1.65;color:rgba(251,247,238,.82);}
+  .lic b{color:var(--on-dark);font-weight:700;}
+  .fine{margin-top:18px;font-size:.74rem;color:rgba(251,247,238,.6);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .sync b{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--marigold);margin-right:6px;vertical-align:1px;}
+
+  @media (max-width:820px){
+    .welcome{grid-template-columns:1fr;}
+    .welcome .photo{aspect-ratio:16/11;}
+    .welcome .photo img{object-position:50% 25%;}
+  }
+  @media (max-width:600px){
+    .bar{padding:12px 16px;}
+    .lang-toggle button{padding:9px 11px;font-size:.74rem;}
+    .tileband{height:30px;}
+    .intro{grid-template-columns:1fr;}
+    .intro .thumb{display:none;}
+    .row2,.pills,.team-names,.disc,.lic{grid-template-columns:1fr;}
+    .pills.three{grid-template-columns:repeat(3,1fr);}
+    .pill{padding:15px 8px;font-size:.98rem;}
+    .pick{grid-template-columns:1fr;}
+    .logos{gap:8px;}
+    .logo-card{height:64px;padding:8px;}
+    .logo-card img{max-height:46px;}
+  }
+</style>
+</head>
+<body class="limewash">
+<div class="tileband" aria-hidden="true"></div>
+
+<header class="limewash">
+  <div class="bar">
+    <span class="wordmark">Team Perez <em>Aguilar</em></span>
+    <div class="lang-toggle" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">English</button>
+      <button type="button" data-lang="es" aria-pressed="false">Español</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- 1. Welcome (kiosk only) -->
+  <section id="vLang" class="welcome">
+    <div class="photo"><img data-photo alt="Silvia Aguilar and Fernando Perez, Team Perez Aguilar"></div>
+    <div>
+      <span class="tag" data-event-label></span>
+      <h1>Welcome.<br><em>Bienvenidos.</em></h1>
+      <p class="lede">Join our free monthly newsletter — local market news, homeownership tips and community events.</p>
+      <p class="lede es">Únase a nuestro boletín mensual gratuito — noticias del mercado, consejos para propietarios y eventos de la comunidad.</p>
+      <div class="team-names">
+        <div><b>Silvia Aguilar</b><span>Broker Associate · DRE #01745879</span></div>
+        <div><b>Fernando Perez</b><span>Loan Officer · NMLS #1011109</span></div>
+      </div>
+      <div class="pick">
+        <button type="button" class="en" data-pick="en">English<small>Continue in English</small></button>
+        <button type="button" class="es" data-pick="es">Español<small>Continuar en Español</small></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Form -->
+  <section id="vForm" class="form-wrap" hidden>
+    <div class="intro">
+      <div class="thumb"><img data-photo alt="Silvia Aguilar and Fernando Perez"></div>
+      <div>
+        <span class="tag" data-event-label></span>
+        <h1 data-t-html="title"></h1>
+        <p class="lede" data-t="subtitle"></p>
+      </div>
+    </div>
+    <p class="who" data-t-html="who"></p>
+    <div class="offer" id="offer" hidden></div>
+
+    <div class="panel">
+      <form id="form" novalidate autocomplete="on">
+        <div class="row2">
+          <div><label class="lbl" for="first" data-t="first"></label><input id="first" type="text" autocomplete="given-name" autocapitalize="words"></div>
+          <div><label class="lbl" for="last" data-t="last"></label><input id="last" type="text" autocomplete="family-name" autocapitalize="words"></div>
+        </div>
+        <div><label class="lbl" for="email" data-t="email"></label><input id="email" type="email" autocomplete="email" autocapitalize="off" spellcheck="false" inputmode="email"></div>
+        <div><label class="lbl" for="phone"><span data-t="phone"></span> <em data-t="optional"></em></label><input id="phone" type="tel" inputmode="numeric" autocomplete="tel-national"></div>
+
+        <div>
+          <div class="lbl" data-t="bucketQ"></div>
+          <div class="pills" id="buckets"></div>
+        </div>
+
+        <div class="reveal" id="whenWrap" hidden>
+          <div class="lbl" data-t="whenQ"></div>
+          <div class="pills three" id="when"></div>
+        </div>
+
+        <div class="checks">
+          <label class="check main"><input type="checkbox" id="newsletter"><span><span data-t="newsletter"></span><small data-t="newsletterSmall"></small></span></label>
+          <label class="check" id="consentWrap" hidden><input type="checkbox" id="consent"><span data-t="consent"></span></label>
+        </div>
+
+        <div class="err" id="err" hidden></div>
+        <button type="submit" class="submit" id="submit" data-t="submit"></button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 3. Done -->
+  <section id="vDone" class="done" hidden>
+    <div class="photo"><img data-photo alt="Silvia Aguilar and Fernando Perez"></div>
+    <span class="tag" data-t="doneTag"></span>
+    <h2 id="doneTitle"></h2>
+    <p class="lede" data-t="doneBody"></p>
+    <a class="btn" id="siteBtn" target="_blank" rel="noopener" data-t="site" hidden></a>
+    <button type="button" class="again" id="againBtn" data-t="again" hidden></button>
+  </section>
+</main>
+
+<footer>
+  <div class="foot">
+    <div class="foot-top">
+      <span class="wordmark">Team Perez <em>Aguilar</em></span>
+      <p data-t="footBlurb"></p>
+    </div>
+
+    <div class="logos">
+      <div class="logo-card"><img data-asset="sfr-logo.png" alt="San Fernando Realty"></div>
+      <div class="logo-card"><img data-asset="alterra-logo.png" alt="Simply PMG — Panorama Mortgage Group"></div>
+      <div class="logo-card"><img data-asset="realtor-mls-logo.png" alt="REALTOR® · Multiple Listing Service"></div>
+    </div>
+
+    <div class="disc">
+      <div>
+        <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11L12 3l9 8v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="16.5" x2="16" y2="16.5" stroke="currentColor" stroke-width="1.5"/></svg>Equal Housing Opportunity</h3>
+        <p>In accordance with the Federal Fair Housing Act, San Fernando Realty does not discriminate on the basis of race, color, religion, sex, handicap, familial status, or national origin in the sale, rental, or financing of housing.</p>
+      </div>
+      <div>
+        <h3><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11L12 3l9 8v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="16.5" x2="16" y2="16.5" stroke="currentColor" stroke-width="1.5"/></svg>Equal Housing Lender</h3>
+        <p>Simply PMG (Panorama Mortgage Group, LLC, NMLS #133739) is an Equal Housing Lender. This is not a commitment to lend; all loans are subject to underwriting and credit approval.</p>
+      </div>
+    </div>
+
+    <div class="lic">
+      <div><b>Silvia Aguilar</b>, Broker Associate/Short Sale Negotiator · DRE #01745879<br>San Fernando Realty · Corporate License ID 01167079<br>458 N Maclay Ave, San Fernando, CA 91340</div>
+      <div><b>Fernando Perez</b>, Loan Officer · NMLS #1011109<br>Simply PMG (Panorama Mortgage Group, LLC) · NMLS #133739<br>17046 Devonshire Street, Northridge, CA 91325</div>
+    </div>
+
+    <div class="fine">
+      <span>© <span id="yr"></span> Team Perez Aguilar · teamperezaguilar.com</span>
+      <span class="sync" id="sync" hidden><b></b><span></span></span>
+    </div>
+  </div>
+</footer>
+<div class="tileband" aria-hidden="true"></div>
+
+<script>
+(function () {
+  const SITE = 'https://teamperezaguilar.com/';
+  document.querySelectorAll('img[data-photo]').forEach(i => i.src = SITE + 'uploads/team-photo.jpg');
+  document.querySelectorAll('img[data-asset]').forEach(i => i.src = SITE + i.dataset.asset);
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* ---------- copy ---------- */
+  const TR = {
+    en: {
+      title: 'Join our <em>monthly</em> newsletter.',
+      subtitle: 'Local market news, homeownership tips and community events — once a month, free. Takes about 30 seconds.',
+      who: 'From <b>Silvia Aguilar</b>, Broker Associate, and <b>Fernando Perez</b>, Loan Officer — your bilingual team for buying, selling and home financing.',
+      first: 'First Name', last: 'Last Name', email: 'Email', phone: 'Phone Number', optional: '(optional)',
+      bucketQ: 'What best describes you right now?',
+      whenQ: 'When are you thinking?',
+      newsletter: 'Yes! Send me the Team Perez Aguilar monthly newsletter.',
+      newsletterSmall: 'By email. Unsubscribe anytime.',
+      consent: 'I also agree to be contacted by Team Perez Aguilar — Silvia Aguilar (DRE #01745879, San Fernando Realty) and Fernando Perez (NMLS #1011109, Simply PMG) — by phone, text, or email about real estate and home financing. Message and data rates may apply. Consent is not a condition of service.',
+      submit: 'Sign Me Up', submitting: 'Signing Up...',
+      errMissing: 'Please fill in your first name, last name, email, and choose what describes you.',
+      errEmail: 'Please check your email address.',
+      errPhone: 'Phone number must be 10 digits (or leave it blank).',
+      errWhen: 'Please choose when you are thinking.',
+      errNews: 'Please check the newsletter box to sign up.',
+      doneTag: "You're on the list",
+      doneTitle: 'Thank you, <em>{name}</em>!',
+      doneBody: 'Watch your inbox for our next monthly newsletter. Questions today about buying, selling or a home loan? Silvia and Fernando would love to help.',
+      site: 'Visit Our Website', again: 'Sign up someone else',
+      footBlurb: 'Bilingual real estate broker and loan officer serving San Fernando Valley, Santa Clarita Valley, Antelope Valley, and LA County.',
+      pending: n => n === 1 ? '1 sign-up saved — will sync when online' : n + ' sign-ups saved — will sync when online',
+      notConnected: n => 'Not connected to Google Sheet yet · ' + n + ' saved on this device'
+    },
+    es: {
+      title: 'Únase a nuestro boletín <em>mensual</em>.',
+      subtitle: 'Noticias del mercado local, consejos para propietarios y eventos de la comunidad — una vez al mes, gratis. Toma unos 30 segundos.',
+      who: 'De parte de <b>Silvia Aguilar</b>, Broker Associate, y <b>Fernando Perez</b>, Loan Officer — su equipo bilingüe para comprar, vender y financiar su casa.',
+      first: 'Nombre', last: 'Apellido', email: 'Correo Electrónico', phone: 'Teléfono', optional: '(opcional)',
+      bucketQ: '¿Qué lo describe mejor en este momento?',
+      whenQ: '¿Para cuándo lo está pensando?',
+      newsletter: '¡Sí! Envíenme el boletín mensual de Team Perez Aguilar.',
+      newsletterSmall: 'Por correo electrónico. Puede cancelar en cualquier momento.',
+      consent: 'También acepto que Team Perez Aguilar — Silvia Aguilar (DRE #01745879, San Fernando Realty) y Fernando Perez (NMLS #1011109, Simply PMG) — me contacten por teléfono, mensaje de texto o correo electrónico sobre bienes raíces y financiamiento de vivienda. Pueden aplicar tarifas de mensajes y datos. El consentimiento no es una condición del servicio.',
+      submit: 'Inscribirme', submitting: 'Inscribiendo...',
+      errMissing: 'Por favor escriba su nombre, apellido, correo y elija lo que mejor lo describe.',
+      errEmail: 'Por favor revise su correo electrónico.',
+      errPhone: 'El teléfono debe tener 10 dígitos (o déjelo en blanco).',
+      errWhen: 'Por favor elija para cuándo lo está pensando.',
+      errNews: 'Por favor marque la casilla del boletín para inscribirse.',
+      doneTag: 'Ya está inscrito',
+      doneTitle: '¡Gracias, <em>{name}</em>!',
+      doneBody: 'Esté pendiente de su correo para nuestro próximo boletín mensual. ¿Tiene preguntas hoy sobre comprar, vender o un préstamo? Silvia y Fernando con gusto le ayudan.',
+      site: 'Visite Nuestro Sitio Web', again: 'Inscribir a otra persona',
+      footBlurb: 'Broker de bienes raíces y oficial de préstamos bilingües, sirviendo al Valle de San Fernando, Valle de Santa Clarita, Valle del Antílope y el Condado de Los Ángeles.',
+      pending: n => n === 1 ? '1 registro guardado — se enviará al conectarse' : n + ' registros guardados — se enviarán al conectarse',
+      notConnected: n => 'Aún sin conexión a Google Sheet · ' + n + ' guardados en este dispositivo'
+    }
+  };
+
+  /* value = what lands in the sheet (always English); timeframe asked for the first five */
+  const BUCKETS = [
+    { v: 'Buying',                 en: 'Looking to buy',                es: 'Quiero comprar',                   when: true },
+    { v: 'Selling',                en: 'Thinking of selling',           es: 'Pienso vender',                    when: true },
+    { v: 'Buying & Selling',       en: 'Buying & selling',              es: 'Comprar y vender',                 when: true },
+    { v: 'Refinancing',            en: 'Refinancing',                   es: 'Refinanciar',                      when: true },
+    { v: 'Renting – Future Buyer', en: 'Renting — want to buy someday', es: 'Rento — quiero comprar algún día', when: true },
+    { v: 'Investor',               en: 'Investor',                      es: 'Inversionista',                    when: false },
+    { v: 'Just Staying Informed',  en: 'Just staying informed',         es: 'Solo mantenerme informado(a)',     when: false, wide: true }
+  ];
+  const WHEN = [
+    { v: '0–6 months',  en: '0–6 months',  es: '0–6 meses' },
+    { v: '6–12 months', en: '6–12 months', es: '6–12 meses' },
+    { v: '1+ year',     en: '1+ year',     es: 'Más de 1 año' }
+  ];
+
+  /* ---------- event + mode from the link ---------- */
+  const params = new URLSearchParams(location.search);
+  const slug = (params.get('event') || CONFIG.defaultEvent).trim().toLowerCase();
+  const titleCase = s => s.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const EV = CONFIG.events[slug] || { en: titleCase(slug), es: titleCase(slug) };
+  const KIOSK = (params.get('mode') || '').toLowerCase() === 'kiosk';
+
+  /* ---------- state ---------- */
+  const S = { view: 'lang', lang: 'en', bucket: '', when: '', busy: false, name: '' };
+  const $ = id => document.getElementById(id);
+  const el = { first: $('first'), last: $('last'), email: $('email'), phone: $('phone'), news: $('newsletter'), consent: $('consent') };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  if (!KIOSK && /^es/i.test(navigator.language || '')) S.lang = 'es';
+  const t = () => TR[S.lang];
+
+  function pill(item, selected, onClick, extra) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pill' + (extra ? ' ' + extra : '');
+    b.textContent = item[S.lang];
+    b.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function render() {
+    const T = t();
+    document.documentElement.lang = S.lang;
+    $('vLang').hidden = S.view !== 'lang';
+    $('vForm').hidden = S.view !== 'form';
+    $('vDone').hidden = S.view !== 'done';
+
+    document.querySelectorAll('[data-event-label]').forEach(n => {
+      n.textContent = S.view === 'lang' && EV.es && EV.es !== EV.en ? EV.en + ' · ' + EV.es : (EV[S.lang] || EV.en);
+    });
+    document.querySelectorAll('[data-t]').forEach(n => { const v = T[n.dataset.t]; if (typeof v === 'string') n.textContent = v; });
+    document.querySelectorAll('[data-t-html]').forEach(n => { n.innerHTML = T[n.dataset.tHtml]; });
+    document.querySelectorAll('.lang-toggle button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === S.lang ? 'true' : 'false'));
+
+    const offer = S.lang === 'es' ? (EV.offerEs || EV.offerEn) : EV.offerEn;
+    $('offer').hidden = !offer; $('offer').textContent = offer || '';
+
+    const bWrap = $('buckets'); bWrap.innerHTML = '';
+    BUCKETS.forEach(b => bWrap.appendChild(pill(b, S.bucket === b.v, () => {
+      S.bucket = b.v; if (!b.when) S.when = ''; clearErr(); render();
+    }, b.wide ? 'wide' : '')));
+
+    $('whenWrap').hidden = !needsWhen();
+    const wWrap = $('when'); wWrap.innerHTML = '';
+    WHEN.forEach(w => wWrap.appendChild(pill(w, S.when === w.v, () => { S.when = w.v; clearErr(); render(); })));
+
+    $('consentWrap').hidden = digits(el.phone.value).length === 0;
+    $('submit').disabled = S.busy;
+    $('submit').textContent = S.busy ? T.submitting : T.submit;
+    $('doneTitle').innerHTML = T.doneTitle.replace('{name}', esc(S.name));
+
+    $('siteBtn').hidden = KIOSK; $('siteBtn').href = CONFIG.website;
+    $('againBtn').hidden = KIOSK;
+    renderSync();
+  }
+
+  const digits = s => (s || '').replace(/\D/g, '');
+  const needsWhen = () => { const b = BUCKETS.find(x => x.v === S.bucket); return !!(b && b.when); };
+  function showErr(msg) { const e = $('err'); e.textContent = msg; e.hidden = false; e.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  function clearErr() { $('err').hidden = true; }
+
+  /* ---------- submit ---------- */
+  $('form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (S.busy) return;
+    const T = t();
+    const first = el.first.value.trim(), last = el.last.value.trim(), email = el.email.value.trim(), phone = digits(el.phone.value);
+    if (!first || !last || !email || !S.bucket) return showErr(T.errMissing);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return showErr(T.errEmail);
+    if (phone && phone.length !== 10) return showErr(T.errPhone);
+    if (needsWhen() && !S.when) return showErr(T.errWhen);
+    if (!el.news.checked) return showErr(T.errNews);
+
+    enqueue({
+      id: uid(),
+      submittedAt: new Date().toISOString(),
+      event: slug,
+      eventName: EV.en,
+      source: KIOSK ? 'Kiosk' : 'Link / QR',
+      firstName: first, lastName: last, email: email, phone: phone,
+      language: S.lang,
+      bucket: S.bucket,
+      timeframe: needsWhen() ? S.when : '',
+      newsletter: true,
+      contactConsent: !!(phone && el.consent.checked)
+    });
+    S.name = first; S.view = 'done'; render();
+    window.scrollTo(0, 0);
+    flush();
+    if (KIOSK) { clearTimeout(S.timer); S.timer = setTimeout(reset, CONFIG.kioskResetSeconds * 1000); }
+  });
+
+  function reset() {
+    clearTimeout(S.timer); clearTimeout(S.idle);
+    ['first', 'last', 'email', 'phone'].forEach(k => el[k].value = '');
+    el.news.checked = false; el.consent.checked = false;
+    S.bucket = ''; S.when = ''; S.busy = false; S.name = ''; clearErr();
+    if (KIOSK) S.lang = 'en';
+    S.view = KIOSK ? 'lang' : 'form';
+    render(); window.scrollTo(0, 0);
+  }
+
+  /* ---------- kiosk: clear a half-finished form after inactivity ---------- */
+  function poke() {
+    if (!KIOSK || S.view !== 'form') return;
+    clearTimeout(S.idle);
+    S.idle = setTimeout(reset, CONFIG.kioskIdleSeconds * 1000);
+  }
+  ['pointerdown', 'keydown', 'input'].forEach(ev => document.addEventListener(ev, poke, { passive: true }));
+
+  /* ---------- offline-safe queue ---------- */
+  const QKEY = 'tpa_signup_queue';
+  let memQ = [];
+  function readQ() { try { return JSON.parse(localStorage.getItem(QKEY) || '[]'); } catch (e) { return memQ; } }
+  function writeQ(q) { memQ = q; try { localStorage.setItem(QKEY, JSON.stringify(q)); } catch (e) {} }
+  function enqueue(item) { const q = readQ(); q.push(item); writeQ(q); }
+  function uid() { try { return crypto.randomUUID(); } catch (e) { return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10); } }
+
+  let flushing = false;
+  async function flush() {
+    if (flushing || !/^https:/.test(CONFIG.scriptUrl || '')) { renderSync(); return; }
+    flushing = true;
+    try {
+      let q = readQ();
+      while (q.length) {
+        const item = q[0];
+        let ok = false;
+        try {
+          const res = await fetch(CONFIG.scriptUrl, { method: 'POST', body: JSON.stringify(item) });
+          ok = res.ok || res.type === 'opaque';
+          try { const j = await res.clone().json(); if (j && j.ok === false) ok = false; } catch (e) {}
+        } catch (e) { ok = false; }
+        if (!ok) break;
+        q = readQ().filter(x => x.id !== item.id); writeQ(q);
+      }
+    } finally { flushing = false; renderSync(); }
+  }
+
+  function renderSync() {
+    const n = readQ().length, box = $('sync');
+    if (!n) { box.hidden = true; return; }
+    box.hidden = false;
+    box.querySelector('span').textContent = CONFIG.scriptUrl ? t().pending(n) : t().notConnected(n);
+  }
+  window.addEventListener('online', flush);
+  setInterval(flush, 30000);
+
+  /* ---------- wiring ---------- */
+  document.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => { S.lang = b.dataset.pick; S.view = 'form'; render(); poke(); window.scrollTo(0, 0); }));
+  document.querySelectorAll('.lang-toggle button').forEach(b => b.addEventListener('click', () => { S.lang = b.dataset.lang; render(); }));
+  el.phone.addEventListener('input', () => {
+    let d = digits(el.phone.value);
+    if (d.length === 11 && d[0] === '1') d = d.slice(1);
+    d = d.slice(0, 10);
+    if (el.phone.value !== d) el.phone.value = d;
+    $('consentWrap').hidden = d.length === 0;
+  });
+  $('againBtn').addEventListener('click', reset);
+
+  /* QR / bio links skip the welcome screen; the kiosk starts on it */
+  if (!KIOSK) S.view = 'form';
+  render(); flush();
+
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>

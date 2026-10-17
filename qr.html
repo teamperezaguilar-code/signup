@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Perez Aguilar · QR Sign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,600;1,6..72,600&family=Archivo:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{--ink:#241F1B;--ink-3:#4A4038;--ink-4:#6B5F52;--cream:#F6F1E6;--line:rgba(41,37,33,.18);--clay:#8E4229;--terracotta:#A85236;--marigold:#E9A62F;--olive:#4E5A41;--on-dark:#FBF7EE;
+    --serif:'Newsreader',Georgia,serif;--sans:'Archivo','Helvetica Neue',Arial,sans-serif;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:#E9E2D3;font-family:var(--sans);color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .controls{max-width:8.5in;margin:24px auto 0;padding:18px 22px;background:#fff;border:1px solid var(--line);display:grid;gap:12px;}
+  .controls h1{margin:0;font-family:var(--serif);font-size:22px;}
+  .controls p{margin:0;color:var(--ink-4);font-size:14px;line-height:1.5;}
+  .controls label{display:block;font:700 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;}
+  .controls input{width:100%;padding:12px;border:1.5px solid rgba(41,37,33,.28);background:var(--cream);font:500 16px var(--sans);}
+  .controls .link{font-size:13px;color:var(--ink-4);word-break:break-all;}
+  .controls button{justify-self:start;padding:12px 22px;border:0;background:var(--terracotta);color:#fff;font:700 13px var(--sans);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;}
+
+  .sheet{width:8.5in;height:11in;margin:24px auto;display:flex;flex-direction:column;overflow:hidden;
+    background:#F6F1E6 url("https://teamperezaguilar.com/uploads/eb1f234b-b60c-46e5-ae0d-5562820f772a.jpg");background-size:900px;background-blend-mode:multiply;box-shadow:0 20px 50px rgba(36,31,27,.18);}
+  .tile{height:.5in;flex-shrink:0;background:#1d4570 url("https://teamperezaguilar.com/uploads/6c42d43b-78ca-4328-be2e-30d5f08f4a1e-61703d34.jpg") repeat-x;background-size:auto 100%;}
+  .body{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:.38in .55in .2in;}
+  .wordmark{font-family:var(--serif);font-weight:600;font-size:30px;}
+  .wordmark em{font-style:normal;color:var(--clay);}
+  .tag{display:inline-block;margin-top:14px;background:var(--marigold);font:700 13px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;padding:10px 14px;}
+  h2{font-family:var(--serif);font-weight:600;font-size:46px;line-height:1.02;margin:16px 0 4px;}
+  h2 em{color:var(--clay);}
+  .es{font-family:var(--serif);font-style:italic;font-weight:600;font-size:28px;color:var(--ink-4);margin:0 0 .24in;}
+  .mid{display:flex;align-items:center;gap:.35in;}
+  .photo{width:2.3in;height:2.85in;border:1px solid var(--line);overflow:hidden;background:#EDE4D2;}
+  .photo img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block;}
+  #qr{padding:14px;background:#fff;border:1px solid var(--line);}
+  #qr img,#qr canvas{display:block;width:2.6in !important;height:2.6in !important;}
+  .scan{margin-top:.2in;font:700 19px var(--sans);letter-spacing:.14em;text-transform:uppercase;}
+  .scan span{display:block;margin-top:4px;font-family:var(--serif);font-style:italic;font-weight:600;font-size:20px;letter-spacing:0;text-transform:none;color:var(--ink-4);}
+  .names{margin-top:.16in;font-size:14px;color:var(--ink-3);line-height:1.5;}
+  .names b{font-family:var(--serif);font-size:17px;color:var(--ink);}
+  .foot{flex-shrink:0;background:var(--olive);color:var(--on-dark);padding:.18in .45in .16in;}
+  .logos{display:grid;grid-template-columns:repeat(3,1fr);gap:.14in;}
+  .logos div{background:#fff;height:.62in;display:flex;align-items:center;justify-content:center;padding:6px 10px;}
+  .logos img{max-height:.46in;max-width:100%;object-fit:contain;}
+  .legal{margin-top:.12in;display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;font-size:9.5px;line-height:1.5;color:rgba(251,247,238,.88);}
+  .legal b{color:var(--on-dark);}
+  .eh{display:flex;align-items:center;gap:6px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:9px;color:var(--on-dark);}
+  @media print{
+    @page{size:letter;margin:0;}
+    body{background:#fff;}
+    .controls{display:none;}
+    .sheet{margin:0;box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="controls">
+    <h1>QR sign for an event</h1>
+    <p>Type the event key from the sign-up page settings (for example <b>farmers-market</b>), then print on letter paper. The QR opens the phone version of the sign-up page.</p>
+    <div><label for="ev">Event key</label><input id="ev" value="farmers-market"></div>
+    <div class="link" id="link"></div>
+    <button type="button" onclick="window.print()">Print Sign</button>
+  </div>
+
+  <div class="sheet">
+    <div class="tile"></div>
+    <div class="body">
+      <div class="wordmark">Team Perez <em>Aguilar</em></div>
+      <span class="tag" id="evlabel">Monthly Newsletter</span>
+      <h2>Join our <em>free</em><br>monthly newsletter.</h2>
+      <p class="es">Únase a nuestro boletín mensual gratuito.</p>
+      <div class="mid">
+        <div class="photo"><img src="https://teamperezaguilar.com/uploads/team-photo.jpg" alt="Silvia Aguilar and Fernando Perez"></div>
+        <div id="qr"></div>
+      </div>
+      <div class="scan">Scan to sign up<span>Escanee para inscribirse</span></div>
+      <div class="names"><b>Silvia Aguilar</b>, Broker Associate &nbsp;·&nbsp; <b>Fernando Perez</b>, Loan Officer<br>Real estate &amp; home loans · Bienes raíces y préstamos</div>
+    </div>
+    <div class="foot">
+      <div class="logos">
+        <div><img src="https://teamperezaguilar.com/sfr-logo.png" alt="San Fernando Realty"></div>
+        <div><img src="https://teamperezaguilar.com/alterra-logo.png" alt="Simply PMG"></div>
+        <div><img src="https://teamperezaguilar.com/realtor-mls-logo.png" alt="REALTOR® · MLS"></div>
+      </div>
+      <div class="legal">
+        <div><b>Silvia Aguilar</b>, Broker Associate · DRE #01745879 · San Fernando Realty, Corp. License 01167079, 458 N Maclay Ave, San Fernando, CA 91340</div>
+        <div><b>Fernando Perez</b>, Loan Officer · NMLS #1011109 · Simply PMG (Panorama Mortgage Group, LLC) NMLS #133739, 17046 Devonshire St, Northridge, CA 91325</div>
+        <div class="eh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11L12 3l9 8v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="16.5" x2="16" y2="16.5" stroke="currentColor" stroke-width="1.8"/></svg>Equal Housing Opportunity</div>
+        <div class="eh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11L12 3l9 8v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="16.5" x2="16" y2="16.5" stroke="currentColor" stroke-width="1.8"/></svg>Equal Housing Lender · Not a commitment to lend</div>
+      </div>
+    </div>
+    <div class="tile"></div>
+  </div>
+
+<script>
+  const EVENTS = {
+    'farmers-market': 'Farmers Market · Mercado de Agricultores',
+    'community-event': 'Community Event · Evento Comunitario',
+    'homebuyer-workshop': 'Homebuyer Workshop · Taller para Compradores',
+    'newsletter': 'Monthly Newsletter · Boletín Mensual'
+  };
+  const input = document.getElementById('ev');
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('event')) input.value = qs.get('event');
+  function draw() {
+    const key = input.value.trim().toLowerCase().replace(/\s+/g, '-');
+    const url = new URL('./', location.href);
+    if (key) url.searchParams.set('event', key);
+    document.getElementById('link').textContent = url.href;
+    document.getElementById('evlabel').textContent = EVENTS[key] || key.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Monthly Newsletter';
+    const box = document.getElementById('qr');
+    box.innerHTML = '';
+    if (window.QRCode) new QRCode(box, { text: url.href, width: 600, height: 600, colorDark: '#241F1B', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    else box.textContent = 'QR library did not load — check your connection.';
+  }
+  input.addEventListener('input', draw);
+  draw();
+</script>
+</body>
+</html>
